@@ -175,3 +175,26 @@ from ex2_9;
 
 --테이블 삭제
 DROP TABLE ex2_9_1;
+
+
+--5/21일 수업
+--뷰 생성하기
+
+CREATE OR REPLACE VIEW  emp_dept_v1 AS
+-- 뷰 테이블 생성 명렁어 
+
+SELECT a.employee_id, a.emp_name, a.department_id, b.department_name  --부서명 컬럼
+FROM employees a, departments b  
+WHERE a.department_id = b.department_id;
+
+
+-- 뷰 실헹
+SELECT
+    *
+FROM emp_dept_v1;
+
+--뷰 삭제
+
+drop view emp_dept_v1;
+
+--인덱스 
