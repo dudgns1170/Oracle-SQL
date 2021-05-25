@@ -352,3 +352,67 @@ AND job_id = ' IT_PROG'
 ORDER BY employee_id;
 --조건을 통한 검색
 
+--5/25 SQL 
+--컬럼명 앞에 (a,b)는 별칭이다.
+SELECT a.employee_id, a.emp_name,a.department_id, b.department_id
+FROM employees a,  departments b
+WHERE a.department_id = b.department_id;
+
+--컬럼명에도 별칭을 붙일수 있으며, 원컬럼명 AS 컬럼별칭, AS 생략 가능
+SELECT a.employee_id, a.emp_name,a.department_id, b.department_name AS dep_name
+FROM employees a,  departments b
+WHERE a.department_id = b.department_id;
+
+--INSERT 데이터 신규 입력
+
+CREATE TABlE ex3_1(
+col1 VARCHAR(20),
+col2 NUMBER,
+col3 DATE);
+--INSERT 데이터 신규 입력(컬럼 ,VALUES 순서 동일)
+INSERT INTO ex3_1(col1,col2,col3)
+VALUES('ABC',10,SYSDATE);
+
+-- 컬럼 순서 상관 x valuse절의 값과 순서를 맟추면 상관 없다.
+INSERT INTO ex3_1(col3,col1,col2)
+VALUES(SYSDATE,'DEF',20);
+--컬럼을 생략 후 입력 가능 단. 컬럼 순서와 동일해야함.전체 컬럼의 값을 입력해줘야함
+INSERT INTO ex3_1
+VALUES('GET',10,SYSDATE);
+
+INSERT INTO ex3_1 (col1, col2)
+VALUES ('GHI',30);
+
+--입력할 컬럼의 값이 맞지않아 오류 발생
+--INSERT INTO ex3_1
+--VALUES ('GHQ',20);
+
+CREATE TABLE ex3_2(
+emp_id  NUMBER,
+emp_name VARCHAR2(100)
+);
+--대소문자 구별,
+INSERT INTO ex3_2( emp_id, emp_name)
+SELECT employee_id, EMP_NAME
+FROM employees
+WHERE salary > 5000;
+
+--묵시적 형변화
+INSERT INTO ex3_1(col1,col2,col3)
+VALUES(10,'10','2014-04-01');
+
+
+--UPDATE문
+
+
+-- 테이블 값 변경
+UPDATE ex3_1
+SET col2 = 50;
+
+--널값을 찾아 SYSDATE 값으로 전환
+
+UPDATE ex3_1
+SET col3 =SYSDATE
+WHERE col3 IS NULL;
+
+--MERGE문 
