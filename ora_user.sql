@@ -728,3 +728,17 @@ WHEN NOT MATCHED THEN
 SELECT
     *
 FROM ex3_3;
+    
+3)
+SELECT employee_id ,emp_name
+FROM employees 
+WHERE commission_pct IS NULL
+ORDER BY employee_id;
+
+4)
+SELECT employee_id, emp_name,salary, manager_id
+FROM employees
+WHERE  salary >=2000 and salary <= 2500
+ORDER BY employee_id;
+
+--5) p123
