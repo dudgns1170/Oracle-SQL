@@ -663,3 +663,65 @@ SELECT
 FROM exam2_2;
 
 COMMIT; 
+
+--5/27일 수업  
+--
+--GREATEST 큰 값을 나타내는것 
+--LEAST 가장 작은값 
+SELECT GREATEST(1,2,3,2),
+            LEAST(1,2,3,2)
+FROM DUAL;
+
+SELECT prod_id ,  DECODE(channel_id,  3, 'Direct', 
+                                                        9, 'Direct',
+                                                        5,'Indirect',
+                                                        4, 'Indirect',
+                                                        'Others')  decodes
+FROM sales -- 무작위 추출
+WHERE rownum < 10;
+
+--ex1
+SELECT phone_number,LPAD( SUBSTR(phone_number, 4) ,13, '(02)' )
+FROM employees;
+
+-- 2
+
+SELECT employee_id 사원번호, emp_name 사원명, HIRE_DATE 입사일자, ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12) 근속년수
+FROM employees
+WHERE  ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12)>= 10
+ORDER BY ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12);
+
+-- 3
+
+SELECT REPLACE(cust_main_phone_number, '-' , '/')
+FROM CUSTOMERS;
+
+-- 4
+
+SELECT TRANSLATE(cust_main_phone_number, '0123456789', 'ABCDEFGHIJ')
+FROM CUSTOMERS;
+
+--ex5
+
+SELECT cust_name, cust_year_of_birth,
+DECODE(TRUNC(( TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth ) /10)  , 3, '30',
+                                                                                        4,'40대',
+                                                                                        5, '50' , 
+                                                                                        '기타'  ) generation
+FROM customers;
+
+SELECT TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth year,
+            CASE  WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 30 THEN  '20'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 40 THEN  '30'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 50 THEN  '40'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 60 THEN  '50'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 70 THEN  '60'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 80 THEN  '70'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 90 THEN  '80'
+              WHEN TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth <= 100 THEN  '90'
+            END AS  NewYear
+FROM customers;
+
+
+
+
