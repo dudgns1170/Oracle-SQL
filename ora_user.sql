@@ -723,5 +723,117 @@ SELECT TO_CHAR(SYSDATE, 'YYYY') -cust_year_of_birth year,
 FROM customers;
 
 
+--6/1일 ORACLE 수업
 
+SELECT cust_name ,TRANSLATE(cust_main_phone_number,  '0123456789', 'ABCDEFGHIJ') new_phone_number
+FROM CUSTOMERS
+ORDER By cust_name;
+
+SELECT  cust_main_phone_number
+FROM CUSTOMERS;
+
+--암호화
+--CREATE TABLE (
+--name byte,
+--NUM_)
+--저장할 컬럼INSERT INTO 해당 테이블 (컬럼)
+--SELECT  들어갈 컬럼의 해달 컬럼
+--FROM 셀렉트에 들어간 커럼 해당 테이블
+
+
+commit;
+
+SELECT TO_CHAR(hire_date, 'YYYY') ,COUNT(*) 사원수
+FROM employees
+GROUP BY TO_CHAR(hire_date,'YYYY');
+
+--조인 테이블 간의 관계를 맺는 방법
+--내부조인 
+
+--동등조인 
+--
+SELECT a.employee_id, a.emp_name, a.department_id, b.department_name
+FROM employees a, departments b
+-- a.department_id = b.department_id 아이디가 같은 컬럼을 조회 
+WHERE a.department_id = b.department_id;
+
+--세미조인 서브쿼리에 존재하는 데이터만 메인 쿼리에서 추출 
+--exists 하나라도 만족하는 값이 있으면 참 
+-- 서브쿼리의 테이블에서 연봉이 3000만원 이상인 부서가 있으면 반환
+--SELECT 로 나눠서 실습 하면 이해에 도움.
+SELECT a.department_id, department_name
+FROM departments a
+WHERE  exists ( SELECT * FROM employees b
+                        WHERE a.department_id = b.department_id
+                        AND b.salary > 3000)
+ORDER BY a.department_id;
+--세미코인 IN
+SELECT a.department_id, department_name
+FROM departments a
+WHERE a.department_id IN (
+                                SELECT b.department_id 
+                                FROM employees b 
+                                WHERE  b.salary > 3000)
+ORDER BY a.department_id;
+
+commit;
+
+--6/1일 시험
+
+--1번
+SELECT replace(LPAD(SUBSTR(phone_number, 4,12), 14, '(031)') ,  '.', '-')
+FROM employees;
+
+--2번
+SELECT employee_id 사번, emp_name 이름 ,ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12) 근속년수
+FROM employees
+WHERE  ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12)>= 22
+ORDER BY ROUND(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12);
+
+-- 3번 
+SELECT cust_main_phone_number "기존 전화번호", TRANSLATE(cust_main_phone_number,'1234567890','ABCDEFGHIJ') new_phone_number
+FROM CUSTOMERS
+ORDER BY cust_name;
+
+--4번
+CREATE TABLE exam3(
+name   VARCHAR2(100),
+new_phone_number   VARCHAR2(25)
+);
+
+
+--5번
+INSERT INTO exam3 ( name, new_phone_number)
+SELECT cust_name ,TRANSLATE(cust_main_phone_number, '0123456789' ,'ABCDEFGHIJ')
+FROM CUSTOMERS;
+
+
+--6번
+SELECT name ,TRANSLATE(new_phone_number,   'ABCDEFGHIJ', '0123456789') new_phone_numbe
+FROM exam3;
+
+--7번
+SELECT 년생,
+CASE WHEN 년생  BETWEEN 1950 AND 1959 THEN '1950년'
+         WHEN 년생 BETWEEN 1960 AND 1969 THEN '1960년'
+          WHEN 년생  BETWEEN 1970 AND 1979 THEN '1970년'
+          WHEN 년생  BETWEEN 1980 AND 1989 THEN '1980년'
+          WHEN 년생  BETWEEN 1990 AND 1999 THEN '1990년'
+          ELSE '기타 '
+          END AS 출생년도
+FROM(SELECT cust_year_of_birth AS 년생 FROM customers)
+ORDER BY 1 desc;
+
+--8번
+SELECT TO_CHAR(hire_date,'MM') 월별, COUNT(*) 인원수
+FROM employees
+GROUP BY TO_CHAR(hire_date,'MM');
+
+
+--9번
+SELECT region, SUM(loan_jan_amt) 금액
+FROM kor_loan_status
+WHERE period LIKE '2011%'
+GROUP BY region
+ORDER BY SUM(loan_jan_amt) dese;
 
