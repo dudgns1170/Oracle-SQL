@@ -837,3 +837,47 @@ WHERE period LIKE '2011%'
 GROUP BY region
 ORDER BY SUM(loan_jan_amt) dese;
 
+-- 6/2일 SQL
+--안티조인 세미조인 반대 서브쿼리에 없는 데이터 추출
+SELECT a.employee_id, a.emp_name, a.department_id, b.department_name
+FROM employees a,  departments b
+WHERE a.department_id =b.department_id
+--                                   서브쿼리                                                           
+AND a.department_id NOT IN( SELECT department_id 
+                                    FROM departments 
+                                    WHERE manager_id IS NULL);
+                                    
+SELECT COUNT(*)
+FROM  employees a 
+WHERE NOT EXISTS(SELECT 1 
+                            FROM departments c
+                            WHERE a.department_id = c.department_id
+                            AND manager_id IS NULL);
+--셀프조인 서로다른 두 테이블이 아닌 동일한 한 테이블을 사용하여 조인
+SELECT a.employee_id, a.emp_name, b.employee_id, b.emp_name, a.department_id
+FROM employees a ,employees b
+WHERE a.employee_id  >  b.employee_id
+AND a.department_id = b.department_id
+AND a.department_id =20;
+
+--외부조인 (+)모든 데이터를 보여준다.조인데이터에 컬럼이 없는 데이터에 붙인다.
+SELECT a.department_id, a.department_name, b.job_id,b.department_id
+FROM departments a, job_history  b
+WHERE a.department_id = b.department_id(+);
+
+SELECT a.employee_id, a.emp_name, b.job_id,b.department_id
+FROM employees a, job_history  b
+WHERE a.employee_id = b.employee_id(+)
+AND a.department_id = b.department_id(+);
+
+--카타시안 조인 조인 조건이 없는 조인
+SELECT a.employee_id, a.emp_name , b.department_id , b.department_name
+FROM employees a, departments b;
+
+--ANSI 조인 내부조인의 경우 FROM 절애 INNER JOIN을 명시 조인 조건은 ON절 명시
+
+SELECT  a.employee_id, a.emp_name ,b.department_id, b.department_name, a.hire_date
+FROM employees a --비교 테이블1
+INNER JOIN  departments b --비교테이블 2
+ON  (a.department_id =b.department_id) --비교 조건
+WHERE a.hire_date >=TO_DATE('2003-01-01', 'YYYY-MM-DD'); -- 그밖에 조건 
