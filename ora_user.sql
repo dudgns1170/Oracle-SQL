@@ -881,3 +881,142 @@ FROM employees a --비교 테이블1
 INNER JOIN  departments b --비교테이블 2
 ON  (a.department_id =b.department_id) --비교 조건
 WHERE a.hire_date >=TO_DATE('2003-01-01', 'YYYY-MM-DD'); -- 그밖에 조건 
+
+                       
+                        
+--6/ 3 SQL 수업
+-- 데이터가 부족한 부분에 (+)삽입 
+--ANSI 외부조인
+-- FROM 절에 명시된 테이블 순서에 입각 하여  LEFT, RIGHT 로 구분 , OUTER생략가능
+
+SELECT a.employee_id, a.emp_name,  b.job_id, b.department_id
+FROM employees a   --기준
+LEFT OUTER JOIN job_history b
+ON (a.employee_id = b.employee_id AND a.department_id = b.department_id); -- 조건 (기준 왼쪽)
+
+SELECT a.employee_id, a.emp_name,  b.job_id, b.department_id
+FROM job_history b -- 기준
+RIGHT OUTER JOIN employees a
+ON (a.employee_id = b.employee_id AND a.department_id = b.department_id); -- 조건  (기준 오른쪽)
+
+SELECT a.employee_id, a.emp_name,  b.job_id, b.department_id
+FROM  job_history b   --기준
+LEFT  JOIN  employees a 
+ON (a.employee_id = b.employee_id AND a.department_id = b.department_id); -- 조건 (기준 왼쪽)
+
+
+--CROSS 조인
+--카타시안조인 과 동일
+SELECT a.employee_id, a.emp_name, b.department_id, b.department_name
+FROM employees a 
+CROSS JOIN departments b;
+
+
+--FULL OUTER 조인
+
+CREATE TABLE HONG_A(EMP_ID INT);
+CREATE TABLE HONG_B(EMP_ID INT);
+INSERT INTO hong_a VALUES (10);
+INSERT INTO hong_a VALUES (20);
+INSERT INTO hong_a VALUES (40);
+INSERT INTO hong_b VALUES (10);
+INSERT INTO hong_b VALUES (20);
+INSERT INTO hong_b VALUES (30);
+
+commit;
+
+SELECT a.emp_id , b.emp_id
+FROM hong_a a
+FULL OUTER JOIN hong_b b
+ON( a.emp_id = b.emp_id);
+
+
+--서브쿼리
+--연관성이 없는 서브쿼리
+
+
+SELECT count(*)
+FROM employees
+WHERE salary >= (select avg(salary) from employees);
+
+SELECT department_id FROM departments WHERE parent_id IS NUll;
+
+SELECT COUNT(*)
+from employees
+WHERE department_id IN (SELECT department_id FROM departments WHERE parent_id IS NUll);
+
+SELECT employee_id , emp_name , job_id
+FROM employees
+WHERE(employee_id,  job_id ) IN (select employee_id , job_id from job_history);
+
+--전 직원 급여 평균으로 업데이트
+UPDATE employees
+SET salary =(SELECT avg(salary) FROM employees);
+-- 평균 급여보다 많거나 같은 사원 삭제
+DELETE employees
+WHERE salary >= (SELECT AVG(salary) FROM employees);
+
+rollback;
+
+
+--연관성있는 서브 쿼리 메인 테이블과 조인 조건이 걸려있다
+--
+SELECT a.department_id,a.department_name
+FROM departments a -- 첫번쨰 컬럼
+WHERE exists (SELECT 1 FROM job_history b where a.department_id = b.department_id);
+
+SELECT a.employee_id, 
+                                (SELECT b.emp_name FROM employees b WHERE a.employee_id = b.employee_id ) AS emp_name,
+                                (SELECT b.department_name FROM departments b WHERE a.department_id =  b.department_id) AS DEP_name
+FROM job_history a;
+
+
+--ex1
+SELECT a.department_id, a.department_name
+FROM departments a
+WHERE EXISTS (SELECT 1 FROM  employees b WHERE a.department_id = b.department_id
+                        AND b.salary >(SELECT AVG(salary) FROM employees) );
+    
+SELECT department_id , AVG(salary)
+FROM employees a
+WHERE department_id IN (SELECT department_id FROM departments WHERE parent_id = 90)
+GROUP BY department_id;
+
+UPDATE employees a
+SET a.salary = ( SELECT sal
+                        FROM( SELECT b.department_id , AVG(c.salary) as sal
+                        FRoM departments b , employees c
+                        WHERE b.parent_id = 90 AND b.department_id = c.department_id 
+                        GROUP BY b.department_id) d
+                        WHERE a.department_id = d.department_id)
+WHERE a.department_id IN (SELECT department_id 
+                                        FROM departments
+                                        WHERE parent_id = 90);
+                                        
+
+SELECT department_id, MIN(salary), MAX(salary)
+FROM employees
+WHERE department_id IN (SELECT department_id FROM departments WHERE parent_id = 90)
+GROUP BY department_id ;
+
+ROLLBACK;
+
+MERGE INTO employees a
+USING (SELECT b.department_id , AVG(c.salary) as sal
+            FROM departments b , employees c
+            WHERE b.parent_id = 90 
+            AND  b.department_id = c.department_id
+            GROUP BY b.department_id ) d
+            ON ( a.department_id = d.department_id )
+WHEN MATCHED THEN
+    UPDATE SET a.salary = d.sal;
+    
+--인라인뷰  서브쿼리도 하나의 뷰로 볼 수 있기때문에 인라인뷰라는 이름 
+SELECT a.employee_id , a.emp_name , b.department_id , b.department_name
+FROM  employees a ,  departments b, 
+                                                    (SELECT AVG(c.salary) AS AVG_salary
+                                                    FROM departments b, employees c
+                                                    WHERE b.parent_id = 90
+                                                    AND b.department_id = c.department_id) d
+WHERE a.department_id = b.department_id
+AND a.salary > d.avg_salary;
