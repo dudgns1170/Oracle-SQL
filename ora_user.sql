@@ -1020,3 +1020,107 @@ FROM  employees a ,  departments b,
                                                     AND b.department_id = c.department_id) d
 WHERE a.department_id = b.department_id
 AND a.salary > d.avg_salary;
+
+
+
+--6/4일 SQL
+--이탈리아 월평균 구하기
+SELECT a.*
+FROM( SELECT a.sales_month , ROUND(AVG(a.amount_sold)) AS MONTH_AVG
+        FROM sales a, customers b , countries c
+        WHERE a.sales_month BETWEEN  '200001' AND '200012'
+        AND a.cust_id = b.cust_id
+        AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+        GROUP BY a.sales_month ) a,
+        (SELECT ROUND(AVG(a.amount_sold)) AS year_avg
+        FROM sales a , customers b , countries c
+        WHERE a.sales_month BETWEEN '200001' and '200012'
+        AND a.cust_id = b.cust_Id 
+          AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+        ) b
+WHERE a.month_avg > b.year_avg ;
+
+--연도, 사원별 이탈리아 매출액
+SELECT SUBSTR(a.sales_month, 1,4) AS  years, a.employee_id, SUM(a.amount_sold)  AS amount_sold 
+FROM sales a, customers b, countries c
+WHERE a.cust_id = b.cust_id
+  AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+GROUP BY  SUBSTR(a.sales_month, 1,4) , a.employee_id;
+
+-- 1결과 바탕으로 연도별 최대,  매출액 구하기
+
+SELECT years, MAX(amount_sold)  AS MAX_SOLD
+FROM ( SELECT SUBSTR(a.sales_month, 1,4) AS  years, a.employee_id, SUM(a.amount_sold)  AS amount_sold
+        FROM   sales a, customers b, countries c
+        WHERE a.cust_id = b.cust_id
+         AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+GROUP BY  SUBSTR(a.sales_month, 1,4) , a.employee_id ) k
+GROUP By years
+ORDER by years;
+
+--1,2  번 인라인 뷰
+SELECT emp.years, emp.employee_id, emp.amount_sold, emp2.emp_name
+FROM(
+        SELECT SUBSTR(a.sales_month, 1,4) AS  years, a.employee_id, SUM(a.amount_sold)  AS amount_sold
+        FROM sales a, customers b, countries c
+        WHERE a.cust_id = b.cust_id
+        AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+        GROUP BY  SUBSTR(a.sales_month, 1,4) , a.employee_id) emp,
+        
+        (SELECT years, MAX(amount_sold)  AS MAX_SOLD
+        FROM ( SELECT SUBSTR(a.sales_month, 1,4) AS  years, a.employee_id, SUM(a.amount_sold)  AS amount_sold
+        FROM   sales a, customers b, countries c
+        WHERE a.cust_id = b.cust_id
+         AND b.country_id = c.country_id
+        AND c.country_name = 'Italy'
+        GROUP BY  SUBSTR(a.sales_month, 1,4) , a.employee_id ) k
+        GROUP By years) sale , employees emp2
+WHERE emp.years = sale.years
+    AND emp.amount_sold = sale.max_sold
+    AND emp.employee_id = emp2.employee_id
+    ORDER BY years;
+
+--ex1
+SELECT a.employee_id , a.emp_name, d.job_title,job_, b.start_date, b.end_date , c.department_name
+FROM employees a, job_history b , departments c, jobs d
+WHERE a.employee_id =b.employee_id
+AND b.department_id = c.department_id
+AND b.job_id = d.job_id
+AND a.employee_id =101;
+
+--ex2 풀어 보기
+
+--ex3
+
+
+--ex4
+SELECT a.department_id, a.department_name
+FROM departments a ,  employees b
+WHERE a.department_id = b.department_id
+AND b.salary  > 3000
+ORDER BY a.department_name;
+
+SELECT a.department_id, a.department_name
+FROM departments a
+INNER JOIN employees b
+ON(a.department_id = b.department_id)
+WHERE b.salary  > 3000
+ORDER BY a.department_name;
+
+--ex5
+SELECT a.department_id , a.department_name
+FROM departments a
+WHERE EXISTS (SELECT 1
+                    FROM job_history b
+                    WHERE a.department_id = b.department_id);
+                    
+--           연관성 없는 쿼리로 변환
+SELECT a.department_id , a.department_name
+FROM departments a
+WHERE department_id  IN (SELECT department_id 
+                    FROM job_history );         
