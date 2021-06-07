@@ -1,0 +1,109 @@
+--6/7일 PL/SQL 수업
+--익명 블럭 
+-- := 할당 연산자
+--SET SERVEROUTPUT ON  --실행 
+--SET TIMING ON   --실행 시간 보기
+DECLARE
+    vi_num NUMBER;
+BEGIN
+    vi_num  :=  100;
+--  출력기능 함수
+    DBMS_OUTPUT.put_line(vi_num);
+end;
+/
+
+--우선순위 연산자 ** 사용 
+DECLARE
+    a INTEGER := 2**2*3**2;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('a= ' || TO_CHAR(a));
+END;
+/    
+    
+-- PL주석 
+/*이러한주석 부분도 사용가능*/
+
+--DML문 사용 
+--SELECT 문에 INTO를 사용하여 할당된 변수를 삽입.
+--employees.emp_name%TYPE; 사용시 변수타입을 선언하지 않아도됨,
+-- 데이터 테이블.컬럼명%TYPE;
+DECLARE
+    vs_emp_name  employees.emp_name%TYPE;--VARCHAR2(80);  
+    vs_dep_name   departments.department_name%TYPE;--VARCHAR2(80);
+BEGIN
+    SELECT a.emp_name , b.department_name
+    INTO vs_emp_name, vs_dep_name
+    FROM employees a , departments b
+    WHERE a.department_id = b.department_id
+    AND a.employee_id  = 100;
+DBMS_OUTPUT.PUT_LINE(vs_emp_name || ' - ' || vs_dep_name);
+END;
+/
+
+--라벨 가독성 향상을 위해 사용 
+
+--길이 차이를 확인
+
+CREATE TABLE ch08_varchar(
+VAR1  VARCHAR2(4000));
+INSERT INTO ch08_varchar VALUES ('tQbADHDjqtRCvosYCLwzbyKKrQCdJubDPTHnzqvjRwGxhQJtrVbXsLNlgeeMCemGMYpvfoHUHDxIPTDjleABGoowxlzCVipeVwsMFRNzZYgHfQUSIeOITaCKJpxAWwydApVUlQiKDgJlFIOGPOKoJsoemqNbOLdZOBcQhDcMLXuYjRQZDIpgpmImgiwzcLkSilCmLrSbmFNsKEEpzCHDylMvkYPKPNeuJxLvJiApNCYzrMcflECbxwNTKSxaEwVvCYnTnFfMFgDqxobWcSmMJrNTQIVOeWlPaMTfRHsrlFSukppmljmOojPSgJiSbQcgtWWOwUNNYFGtgCGBsIcTGAiHWBxtYVXecoJgJCAJptIVmVTZSKliRLoPYTIUpksBuQaqFHLhCkosWChoMjbqgLtBIRBynsKjKiLrdeHVvZanNVElDjLWwlCDhbpsAVQMTzjzhoKIJBdthynMBMVjeNmsKAjdAYhPZKmuKOuMloQdkqPjoKbfjDEeATciMrXiMQorMhYmBlMODBbyLLIkbmtZdPcWGSuxFEUwXnWpvnunEgcLelSneRIpgRNTzTkHqgLbpxoHzCYgSWlIAvKljCnmWiPWGGwlUFOudRSdoqUxntyhNYEiVXtMObywEltTImawnElpmeiWwlTjGTFceqyjhNqiDLxwduubykWzDmFSJNvVvDZibrCpAReqQjlQZcxuVqjKGKvoDuEcQPQeDzmdMYSOTIQdPDNfDffCOUWflHSQhvVTiYumBQIoyznWNITGZkefknJpGEutUnhBgLPQTWTBeTYccqlLrxvRjfJpdpfVDqqfKCngemIEDDHNdvBxCqKDTrrJAumXMKgpWLIHctQuACeNaKnffpYXiioLxZDrxpuZPPUGpRsCtoQuBfogkKuusVATkMyajKTPSyTQbfhZepRjNdrhkymqKvsAcThYbMSMnkKcLWFPAMeGys
+BVKkQtFMPvRBoDszlSZcMYzwxkKQwJnuVnDxShYiHFlzgDWqhZoqe')
+
+commit;
+DROP TABLE ch08_varchar;
+
+DECLARE
+     vs_sql_varchar2  VARCHAR2(4000);
+     vs_plsql_varchar2 VARCHAR2(32767);
+BEGIN
+ SELECT VAR1
+ INTO vs_sql_varchar2
+ FROM ch08_varchar;
+ vs_plsql_varchar2  := vs_plsql_varchar2 || ' - ' || vs_sql_varchar2 || ' - ' || vs_sql_varchar2;
+ 
+ DBMS_OUTPUT.PUT_LINE('SQL VARCHAR2 길이:' || ' - ' || LENGTHB(vs_sql_varchar2));
+ DBMS_OUTPUT.PUT_LINE('PL/SQL VARCHAR2 길이' || ' -  ' || LENGTHB(vs_plsql_varchar2));
+ END;
+/ 
+-- ex1 구구단3 단 풀력
+DECLARE
+    v1_num NUMBER;
+BEGIN
+ v1_num := 3;
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||1||'='|| v1_num);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||2||'='|| v1_num*2);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||3||'='|| v1_num*3);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||4||'='|| v1_num*4);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||5||'='|| v1_num*5);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||6||'='|| v1_num*6);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||7||'='|| v1_num*7);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||8||'='|| v1_num*8);
+DBMS_OUTPUT.put_line(v1_num|| 'X' ||9||'='|| v1_num*9);
+END;
+/
+
+DECLARE
+    v_emp_name  employees.emp_name%TYPE;
+    v_emp_email  employees.email%TYPE;
+BEGIN
+    SELECT a.emp_name , a.email
+    INTO v_emp_name, v_emp_email
+    FROM employees a 
+    WHERE  a.employee_id  = 201;
+DBMS_OUTPUT.PUT_LINE(v_emp_name || chr(10) ||chr(13)||v_emp_email);
+END;
+/
+
+
+DECLARE 
+  EMPNO_MAX EMPLOYEES.EMPLOYEE_ID%TYPE;
+BEGIN
+   SELECT MAX(EMPLOYEE_id)
+INTO EMPNO_MAX
+FROM EMPLOYEES;
+
+    INSERT INTO employees (employee_id, emp_name,email, hire_date, department_id)  
+                            VALUES(EMPNO_MAX +1 , 'Harrison', 'HARRLS', SYSDATE, 50)
+    commit;
+END;
+
