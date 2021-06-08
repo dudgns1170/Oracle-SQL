@@ -107,3 +107,178 @@ FROM EMPLOYEES;
     commit;
 END;
 
+--6/8일 PL/SQL제어문,함수
+--IF문
+DECLARE
+vn_num1 NUMBER := 1;
+vn_num2 NUMBER :=2;
+BEGIN
+IF vn_num1 >=  vn_num2 THEN
+dbms_output.put_line(vn_num1 || '이 큰수');
+ELSE
+dbms_output.put_line(vn_num2 || '이 큰수');
+END IF;
+END;
+/
+
+DECLARE
+    vn_salary NUMBER := 0;
+    vn_department_id NUMBER := 0;
+BEGIN
+    vn_department_id := ROUND(DBMS_RANDOM.VALUE (10,120), -1);
+    SELECT salary
+    INTO vn_salary
+    FROM employees
+    WHERE department_id =vn_department_id
+    AND ROWNUM =1;
+    DBMS_OUTPUT.PUT_LINE(vn_salary);
+IF 
+    vn_salary BETWEEN 1 AND 3000 THEN 
+    DBMS_OUTPUT.PUT_LINE('낮음');
+ELSIF 
+    vn_salary BETWEEN 3001 AND 6000 THEN
+    DBMS_OUTPUT.PUT_LINE('중간');
+ELSIF 
+    vn_salary BETWEEN 6001 AND 10000 THEN
+    DBMS_OUTPUT.PUT_LINE('높음');
+ELSE
+    DBMS_OUTPUT.PUT_LINE('최상위');
+END IF;
+END;
+/
+
+DECLARE
+    vn_salary NUMBER := 0;
+    vn_department_id NUMBER := 0;
+    vn_commission NUMBER :=0;
+BEGIN 
+    vn_department_id := ROUND(DBMS_RANDOM.VALUE (10,120), -1);
+    SELECT salary, commission_pct
+    INTO vn_salary, vn_commission
+    FROM employees
+    WHERE department_id =vn_department_id
+    AND ROWNUM =1;
+    DBMS_OUTPUT.PUT_LINE(vn_salary);
+    
+IF vn_commission > 0 THEN
+    IF vn_commission > 0.15 THEN
+         dbms_output.put_line(vn_salary * vn_commission);
+        END IF;
+    ELSE
+    dbms_output.put_line(vn_salary);
+    END IF;
+END;
+/
+-- CASE 문
+DECLARE
+    vn_salary NUMBER := 0;
+    vn_department_id NUMBER := 0;
+BEGIN
+    vn_department_id := ROUND(DBMS_RANDOM.VALUE (10,120), -1);
+    SELECT salary
+    INTO  vn_salary
+    FROM employees
+    WHERE department_id =vn_department_id
+    AND ROWNUM =1;
+    DBMS_OUTPUT.PUT_LINE(vn_salary);
+    
+    CASE WHEN vn_salary BETWEEN 1 AND 3000 THEN
+    DBMS_OUTPUT.PUT_LINE('닞음');
+            WHEN vn_salary BETWEEN 3001 AND 6000 THEN
+            DBMS_OUTPUT.PUT_LINE('중간');
+            WHEN vn_salary BETWEEN 6001 AND 9000 THEN
+            DBMS_OUTPUT.PUT_LINE('높음');
+            ELSE
+            DBMS_OUTPUT.PUT_LINE('최상위');
+    END CASE;
+END;
+/
+--loop문
+DECLARE
+ vn_base_num NUMBER := 3;
+ vn_cnt NUMBER :=1;
+ BEGIN
+ LOOP
+ DBMS_OUTPUT.PUT_LINE(vn_base_num || '*' ||vn_cnt || '=' || vn_base_num * vn_cnt);
+ vn_cnt := vn_cnt +1;
+ EXIT WHEN vn_cnt > 9;
+ END LOOP;
+ END;
+ /
+-- WHILE 문
+DECLARE
+ vn_base_num NUMBER := 4;
+ vn_cnt NUMBER :=1;
+ BEGIN
+ WHILE vn_cnt <= 9
+ LOOP
+ DBMS_OUTPUT.PUT_LINE(vn_base_num || '*' ||vn_cnt || '=' || vn_base_num * vn_cnt);
+ EXIT WHEN vn_cnt = 5; --cnt값이 5가 되면 멈춤
+ vn_cnt := vn_cnt +1;    --cnt 값1씩 증가
+
+ END LOOP;
+ END;
+ /
+ 
+-- FOR 문
+-- IN REVERSE  거꾸로
+DECLARE
+vn_num NUMBER := 5;
+BEGIN 
+FOR i in 1..9
+LOOP
+ DBMS_OUTPUT.PUT_LINE(vn_num || '*' || i || '=' || vn_num * i);
+ END LOOP;
+ END;
+/
+--CONTINUE 문
+
+DECLARE
+vn_num NUMBER := 3;
+BEGIN
+FOR i in 1..9
+LOOP 
+CONTINUE WHEN i =3;
+ DBMS_OUTPUT.PUT_LINE(vn_num || '*' || i || '=' || vn_num * i);
+ END loop;
+ end;
+/
+--GOTO문
+--제한적으로 사용. 순서를 방해
+DECLARE
+ vn_base_num  NUMBER := 3;
+BEGIN 
+<<third>>
+For i in 1..9
+LOOP
+DBMS_OUTPUT.PUT_LINE(vn_base_num || '*'|| i || '=' ||vn_base_num *i);
+    IF i = 3 THEN
+        GOTO fourth;
+    END IF;
+ end loop;
+ <<fourth>>
+    vn_base_num := 4;
+ FOR i in 1..9
+    LOOP
+    DBMS_OUTPUT.PUT_LINE(vn_base_num || '*'|| i || '=' ||vn_base_num *i);
+    end loop;
+ end;
+/
+--NULL문
+DECLARE
+ vn_var VARCHAR2(10)  := 'C';
+ BEGin
+IF vn_var = 'A' THEN
+DBMS_OUTPUT.PUT_LINE('A');
+ELSIF vn_var = 'B' THEN
+DBMS_OUTPUT.PUT_LINE('b');
+ELSE NULL;
+END IF;
+/
+CASE WHEN vn_var ='a' THEN
+DBMS_OUTPUT.PUT_LINE('A');
+WHEN vn_var = 'b' Then
+DBMS_OUTPUT.PUT_LINE('b');
+ELSE NUll;
+END case;
+
