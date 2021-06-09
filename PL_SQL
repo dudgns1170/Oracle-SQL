@@ -282,3 +282,209 @@ DBMS_OUTPUT.PUT_LINE('b');
 ELSE NUll;
 END case;
 
+
+--6/9일 PL/SQL 
+--함수 생성
+--나머지 값 구하기
+CREATE OR REPLACE FUNCTION my_mod(num1  NUMBER , num2  NUMBER)
+RETURN NUMBER
+IS
+vn_remainder  NUMBER := 0;
+vn_quotient  NUMBER := 0;
+BEGIN
+vn_quotient := FLOOR(num1 / num2);
+vn_remainder := num1 - (num2*vn_quotient );
+RETURN vn_remainder ;
+END;
+
+/
+SELECT my_mod(14, 5) reminder
+FROM DUAL;
+
+--숫자로 입력받받은 후 국가명 반환
+CREATE OR REPLACE FUNCTION p_country_name(p_country_id NUMBER)   --함수이름 지정 (변수 입력 값)
+RETURN VARCHAR2            --함수 반환 타입
+IS
+    vs_conutry_name COUNTRIES.COUNTRY_NAME%TYPE;   
+BEGIN
+    SELECT country_name
+    INTO vs_conutry_name
+    FROM countries
+    WHERE country_id = p_country_id;
+
+RETURN vs_conutry_name ;
+END;
+/
+
+SELECT p_country_name(52777) 나라1 , p_country_name(28765) 나라2
+FROM DUAL;
+
+CREATE OR REPLACE FUNCTION p_country_name(p_country_id NUMBER)   --함수이름 지정 (변수 입력 값)
+RETURN VARCHAR2            --함수 반환 타입
+IS
+    vs_conutry_name COUNTRIES.COUNTRY_NAME%TYPE; 
+    vs_cnt NUMBER := 0;
+BEGIN
+    SELECT COUNT(*)
+    INTO vs_cnt
+    FROM countries
+    WHERE country_id = p_country_id;
+    
+    IF vs_cnt = 0 THEN vs_conutry_name := '해당국가 없음';
+    ELSE
+    SELECT country_name
+    INTO vs_conutry_name
+    FROM countries
+    WHERE country_id = p_country_id;
+END IF;
+
+RETURN vs_conutry_name ;
+END;
+/
+SELECT p_country_name(52777) 나라1,  p_country_name(527745) 나라2
+FROM DUAL;
+
+
+--사용 유저 확인
+CREATE OR REPLACE FUNCTION fn_get_user
+RETURN VARCHAR2
+IS
+vs_user_name VARCHAR2(80);
+BEGIN
+SELECT USER
+INTO vs_user_name
+FROM DUAL;
+
+RETURN vs_user_name;
+ENd;
+/
+SELECT fn_get_user
+FROM DUAL;
+
+
+--프로시져
+CREATE OR REPLACE PROCEDURE new_job_proc
+
+  ( p_job_id IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+--디폴트 값 설정 := (디폴트값 입력)
+p_min_sal IN jobs.min_salary%TYPE := 10,
+p_max_sal IN jobs.max_salary%TYPE := 100) 
+IS 
+BEGIN 
+INSERT INTO JOBS( job_id, job_title, min_salary,max_salary, create_date, update_date)
+            VALUES(p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
+            commit;
+END;
+/
+-- 업데이트 갱신이 가능하도록 프로시저 수정
+CREATE OR REPLACE PROCEDURE new_job_proc
+
+  ( p_job_id IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+--디폴트 값 설정 := (디폴트값 입력)
+p_min_sal IN jobs.min_salary%TYPE ,
+p_max_sal IN jobs.max_salary%TYPE ) 
+
+IS 
+vn_cnt NUMBER :=0;
+BEGIN 
+SELECT COUNT(*)
+INTO vn_cnt
+FROM JOBS
+WHERE job_id = p_job_id ;
+IF vn_cnt = 0 THEN
+    INSERT INTO JOBS( job_id, job_title, min_salary,max_salary, create_date, update_date)
+            VALUES(p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
+ELSE
+    UPDATE JOBS
+        SET job_title = p_job_title,
+                min_salary = p_min_sal,
+                max_salary = p_max_sal,
+                update_date = SYSDATE
+        WHERE job_id =p_job_id;
+        END IF;
+        commit;
+END;
+/
+
+--프로시져 호출 1
+EXEC  new_job_proc('SM_JOB1', 'Sample JOB1',3000,5000);
+
+DELETE JOBS
+WHERE job_id = 'SM_JOB1';
+--프로시져 호출 2
+EXECUTE new_job_proc(p_job_id => 'SM_JOB1', p_job_title=>'Sample JOB1' , p_min_sal => 2000, p_max_sal =>8000);
+
+SELECT *
+FROM jobs
+WHERE job_id = 'SM_JOB1';
+
+EXEC  new_job_proc('SM_JOB1', 'Sample JOB1');
+
+--OUT,IN,OUT 매개변수
+
+CREATE OR REPLACE PROCEDURE new_job_proc
+ ( p_job_id IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+p_min_sal IN jobs.min_salary%TYPE := 10,
+p_max_sal IN jobs.max_salary%TYPE := 100,
+p_upd_date OUT  jobs.update_date%TYPE) 
+IS 
+vn_cnt NUMBER :=0;
+vn_cur_date jobs.update_date%TYPE := SYSDATE;
+BEGIN
+    SELECT COUNT(*)
+    INTO vn_cnt
+    FROM JOBS
+    WHERE job_id = p_job_id;
+    
+    IF vn_cnt =0 THEN
+      INSERT INTO JOBS( job_id, job_title, min_salary,max_salary, create_date, update_date)
+            VALUES(p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
+    ELSE
+    UPDATE JOBS
+        SET job_title = p_job_title,
+                min_salary = p_min_sal,
+                max_salary = p_max_sal,
+                update_date = SYSDATE
+        WHERE job_id =p_job_id;
+        END IF;
+    p_upd_date := vn_cur_date;
+        commit;
+END;
+/
+DECLARE
+vn_cur_date jobs.update_date%TYPE;
+BEGIN
+-- 익명블록 사용시 프로시저를 실행 하면 EXEC,EXECUTE 사용 하지 않는다,
+new_job_proc ('SM_JOB1', 'Sample JOB1',3000,5000,vn_cur_date);
+DBMS_OUTPUT.PUT_LINE(vn_cur_date);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE test_proc(
+p_var1   VARCHAR2,
+p_var2  OUT VARCHAR2,
+p_var3  IN OUT VARCHAR2)
+IS
+
+BEGIN
+DBMS_OUTPUT.PUT_LINE(p_var1);
+DBMS_OUTPUT.PUT_LINE(p_var2);
+DBMS_OUTPUT.PUT_LINE(p_var3);
+
+p_var2 := 'B2';
+p_var3 := 'C3';
+END;
+/
+--프로시저 실행
+DECLARE
+v_var1 VARCHAR2(10) :='A';
+v_var2 VARCHAR2(10) :='B';
+v_var3 VARCHAR2 (10) :='C';
+BEGIN test_proc(v_var1, v_var2, v_var3);
+DBMS_OUTPUT.PUT_LINE(v_var2);
+DBMS_OUTPUT.PUT_LINE(v_var3);
+END;
+/
