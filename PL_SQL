@@ -488,3 +488,91 @@ DBMS_OUTPUT.PUT_LINE(v_var2);
 DBMS_OUTPUT.PUT_LINE(v_var3);
 END;
 /
+
+CREATE OR REPLACE PROCEDURE new_job_proc
+( p_job_id  IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+p_min_sal IN jobs.min_salary%TYPE := 10,
+p_max_sal IN jobs.max_salary%TYPE :=100
+)
+IS
+vn_cnt NUMBER := 0;
+vn_cur_date jobs.update_date%TYPE := SYSDATE;
+
+
+--6/10일 PL/SQL
+BEGIN
+IF p_min_sal < 1000 THEN
+    DBMS_OUTPUT.PUT_LINE('최소급여값은 1000 입니다.');
+    RETURN;
+END IF;
+SELECT COUNT (*)
+INTO vn_cnt
+FROM jobs
+WHERE job_id = p_job_id;
+END;
+/
+EXEC new_job_proc('SM_JOB1', 'Sample JOB1',999,6000)
+
+
+DECLARE 
+vn_emp_name VARCHAR2(80);
+BEGIN
+vn_emp_name := 'hong';
+UPDATE employees
+SET  emp_name = vn_emp_name
+WHERE employee_id =100;
+
+SELECT emp_name
+INTO vn_emp_name
+FROM employees
+WHERE employee_id= 100;
+DBMS_OUTPUT.PUT_LINE(vn_emp_name);
+END;
+/
+--문제풀이 1번
+-- 리버스 함수 최종값에서 시작해 1씩 감소하여 초기값을 이룬다. 최종값 1 초기값 9이므로
+--루프를 수행 하지 않는다.
+
+DECLARE
+vn_base_num NUMBER :=3;
+BEGIN
+FOR i IN   1..9
+LOOP
+DBMS_OUTPUt.PUt_line(vn_base_num  || '* ' || i || '='|| vn_base_num *i);
+END LOOP;
+END;
+/
+--  문제 풀이 2번
+CREATE OR REPLACE FUNCTION my_initcap(p_initcap VARCHAR2)
+RETURN VARCHAR2
+IS
+vn_pos NUMBER := 1; --각 단어 시작 위치
+vs_temp VARCHAR2(100) :=p_initcap;
+vs_return VARCHAR2(100); --반환할 대문자로 변환된 문자열 함수
+vn_len NUMBER;
+BEGIN
+
+vn_pos := INSTR(vs_temp, ' ');
+vn_len := LENGTH(vs_temp);
+--vs_return := UPPER(SUBSTR(vs_temp, 1,1));
+--vs_return := SUBSTR(vs_temp, 2, vn_len -1);
+vs_return :=UPPER(SUBSTR(vs_temp, 1,1)) ||  SUBSTR(vs_temp, 2, vn_len -1);
+RETURN vs_return;
+END;
+/
+SELECT my_initcap('happy birthday to you') my_initcap
+FROM DUAL;
+/
+--문제 풀이 3번
+CREATE OR REPLACE FUNCTION my_last_day(p_last_day VARCHAR2)
+RETURN VARCHAR2
+IS 
+vn_last VARCHAR2(20);
+BEGIN
+vn_last :=  LAST_DAY (p_last_day);
+RETURN vn_last ;
+end;
+/
+SELECT my_lsat_day('20210202')
+FROM DUAL;
