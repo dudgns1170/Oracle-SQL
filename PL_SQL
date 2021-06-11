@@ -576,3 +576,95 @@ end;
 /
 SELECT my_lsat_day('20210202')
 FROM DUAL;
+--6/11일 PL/SQL
+
+--  문제 풀이 2번
+CREATE OR REPLACE FUNCTION my_initcap(p_initcap VARCHAR2)
+RETURN VARCHAR2
+IS --변수
+vn_pos NUMBER := 1; --각 단어 시작 위치
+vs_temp VARCHAR2(100) :=p_initcap; --임시문자열 저장
+vs_return VARCHAR2(100); --반환할 대문자로 변환된 문자열 함수
+vn_len NUMBER;   --문자열 길이
+BEGIN               --
+    WHILE vn_pos <> 0  --공백문자를 발견하지 못할떄 까지 루프가 돈다.
+    loop
+    --공백문자의 위치를 가져온다.
+    vn_pos := INSTR(vs_temp, ' ');
+        IF vn_pos = 0 THEN --공백 문자를 발견하지 못했을 경우, 즉  맨 마지막 단어일 경우 
+                    vs_return :=vs_return || UPPER(SUBSTR(vs_temp, 1,1)) ||  SUBSTR(vs_temp, 2, vn_len -1);
+         ELSE  -- 공백 문자 위치를 기준으로, 맨 첫자는 어퍼를 사용하여 대문자로 변환, 나머니 문자를 잘라서 변수에 할당
+                vs_return :=vs_return || UPPER(SUBSTR(vs_temp, 1,1)) ||  SUBSTR(vs_temp, 2, vn_pos -2) || ' ';
+        END IF;
+       
+         vn_len := LENGTH(vs_temp); 
+    --vs_temp 최조 전체 문자열을 입력 받고, 루프를 돌면서 한 단어씩 차례로 없앤다.
+    vs_temp :=SUBSTR(vs_temp, vn_pos+1,vn_len-vn_pos);
+END loop;
+RETURN vs_return;
+END;
+/
+SELECT my_initcap('happy birthday to you') my_initcap
+FROM DUAL;
+
+
+
+--문제 풀이 3번
+/
+CREATE OR REPLACE FUNCTION last_days(p_last_days VARCHAR2)
+RETURN VARCHAR2
+IS
+vs_input_date  VARCHAR2(10) :=p_last_days;
+vs_return_date  VARCHAR2(50);
+vs_temp_year  VARCHAR2(4);
+vs_temp_month VARCHAR2(2);
+BEGIN
+vs_input_date := REPLACE(vs_input_date,'-','') ;
+--dbms_output.put_line("오류");
+IF 
+LENGTH (vs_input_date) <> 8 THEN  vs_return_date := '입력값 오류 ';
+ELSE    vs_temp_year :=  SUBSTR(vs_input_date, 1, 4) ;  --년도 가져오기
+    vs_temp_month := SUBSTR(vs_input_date , 5, 2 ) ;  --월 가져오기
+    
+    IF
+--                    입력받은월이 12월 이면   입력받은 월  넘버형 변환 후  +1 후 데이터 타입으로 변환                   
+        vs_temp_month = '12'  THEN    vs_temp_year := TO_CHAR(TO_NUMBER(vs_temp_year))+1;
+        vs_temp_month :='01';
+    ELSE
+-- TRIM 공백을 한쪽으로 ,  함수 확인 하기.   
+    vs_temp_month :=TRIM(TO_CHAR(TO_NUMBER(vs_temp_month) +1, '00'));
+    END IF;
+    vs_return_date := TO_CHAR(TO_DATE(vs_temp_year || vs_temp_month || '01','YYYY-MM-DD')-1, 'YYYYMMDD');
+END IF;
+RETURN vs_return_date;
+END;
+/
+SELECT last_days('2021-12-12') FROM DUAL;
+
+DROP FUNCTION last_day;
+
+create or replace function my_last(ps_date varchar2)
+return varchar2
+is
+    vd_date date := to_date(ps_date,'YYYY-MM-DD');
+    vs_start_mon date := trunc(vd_date,'month');
+    vs_next_mon date := add_months(vs_start_mon, 1);
+    vs_return varchar2(100);
+begin
+    vs_return := to_char(vs_next_mon-1,'YYYY-MM-DD');
+    return vs_return;
+end;
+/
+SELECT my_last('2021-06-02')FROM DUAL;
+
+/
+
+CREATE OR REPLACE FUNCTION my_last_day(p_last_day VARCHAR2)
+RETURN VARCHAR2
+IS 
+vn_last VARCHAR2(20);
+BEGIN
+vn_last :=  LAST_DAY(p_last_day);
+
+RETURN vn_last ;
+end;
