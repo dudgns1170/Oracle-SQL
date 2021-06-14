@@ -668,3 +668,90 @@ vn_last :=  LAST_DAY(p_last_day);
 
 RETURN vn_last ;
 end;
+
+--6/14일 PL/SQL문제 풀이
+
+CREATE OR REPLACE PROCEDURE new_job_proc
+ ( p_job_id IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+p_min_sal IN jobs.min_salary%TYPE := 10,
+p_max_sal IN jobs.max_salary%TYPE := 100,
+p_upd_date OUT  jobs.update_date%TYPE) 
+IS 
+vn_cnt NUMBER :=0;
+vn_cur_date jobs.update_date%TYPE := SYSDATE;
+BEGIN
+    SELECT COUNT(*)
+    INTO vn_cnt
+    FROM JOBS
+    WHERE job_id = p_job_id;
+    
+    IF vn_cnt =0 THEN
+      INSERT INTO JOBS( job_id, job_title, min_salary,max_salary, create_date, update_date)
+            VALUES(p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
+    ELSE
+    UPDATE JOBS
+        SET job_title = p_job_title,
+                min_salary = p_min_sal,
+                max_salary = p_max_sal,
+                update_date = SYSDATE
+        WHERE job_id =p_job_id;
+        END IF;
+    p_upd_date := vn_cur_date;
+        commit;
+END;
+/
+--3번 문제
+CREATE OR REPLACE PROCEDURE new_job_proc2
+( p_job_id IN jobs.job_id%TYPE,
+p_job_title IN jobs.job_title%TYPE,
+p_min_sal IN jobs.min_salary%TYPE := 10,
+p_max_sal IN jobs.max_salary%TYPE := 100,
+p_upd_date OUT  jobs.update_date%TYPE) 
+IS
+BEGIN
+MERGE INTO jobs a
+-- 비교할 테이블이 없음으로 입력 변수에서 조회한다.
+USING ( SELECT p_job_Id as job_id from dual) b
+            ON (a.job_id =b.job_id) 
+--업데이트 할 대상            
+WHEN MATCHED THEN
+UPDATE SET a.job_title = p_job_title,
+                a.min_salary = p_min_sal,
+                a.max_salary = p_max_sal
+--삽입할 대상
+WHEN NOT MATCHED THEN
+INSERT( a.job_id, a.job_title , a.min_salary, a.max_salary,create_date, update_date)
+VALUES (p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
+ENd;
+/
+--6번 문제
+CREATE TABLE ch_09_departments AS
+SELECT department_id, department_name,parent_id
+FROM departments;
+
+select *
+FROM  ch_09_departments;
+/
+CREATE OR REPLACE PROCEDURE my_dept_manage_proc
+(p_dep_id IN  departments.department_id%TYPE,
+p_dep_name IN  departments.department_name%TYPE,
+p_parent_id IN  departments.parent_id%TYPE,
+p_flag IN  VARCHAR2)
+IS
+BEGIN
+IF UPPER(p_flag) ='upsert' then
+    MERGE INTO ch_09_departments a
+    USING(SELECT p_dep_id AS department_id from dual)bb
+    ON  (a.department_id = b.dep_id)
+    WHEN MATCHED THEN
+    UPDATE SET a.departtment_name = p_dep_name,
+                    a.parent_id = p_parnet_id
+    WHEN NOT MATCHED THEN
+    INSERT (a.department_id, a.departtment_name,a.parent_id)
+    VALUES( b.dep_id, p_dep_name,p_parnet_id);
+ELSIF UPPER(p_flag) = 'delete;' then
+
+end;
+/
+EXEC my_dept_manage_proc(2800, 'IT', '기획부',90)
