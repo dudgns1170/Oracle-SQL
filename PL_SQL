@@ -671,37 +671,6 @@ end;
 
 --6/14일 PL/SQL문제 풀이
 
-CREATE OR REPLACE PROCEDURE new_job_proc
- ( p_job_id IN jobs.job_id%TYPE,
-p_job_title IN jobs.job_title%TYPE,
-p_min_sal IN jobs.min_salary%TYPE := 10,
-p_max_sal IN jobs.max_salary%TYPE := 100,
-p_upd_date OUT  jobs.update_date%TYPE) 
-IS 
-vn_cnt NUMBER :=0;
-vn_cur_date jobs.update_date%TYPE := SYSDATE;
-BEGIN
-    SELECT COUNT(*)
-    INTO vn_cnt
-    FROM JOBS
-    WHERE job_id = p_job_id;
-    
-    IF vn_cnt =0 THEN
-      INSERT INTO JOBS( job_id, job_title, min_salary,max_salary, create_date, update_date)
-            VALUES(p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
-    ELSE
-    UPDATE JOBS
-        SET job_title = p_job_title,
-                min_salary = p_min_sal,
-                max_salary = p_max_sal,
-                update_date = SYSDATE
-        WHERE job_id =p_job_id;
-        END IF;
-    p_upd_date := vn_cur_date;
-        commit;
-END;
-/
---3번 문제
 CREATE OR REPLACE PROCEDURE new_job_proc2
 ( p_job_id IN jobs.job_id%TYPE,
 p_job_title IN jobs.job_title%TYPE,
@@ -725,6 +694,7 @@ INSERT( a.job_id, a.job_title , a.min_salary, a.max_salary,create_date, update_d
 VALUES (p_job_id, p_job_title, p_min_sal, p_max_sal, SYSDATE, SYSDATE);
 ENd;
 /
+EXEC new_job_proc2('IT_PM', 'Projget Manager', 2800,7000);
 --6번 문제
 CREATE TABLE ch_09_departments AS
 SELECT department_id, department_name,parent_id
@@ -739,19 +709,45 @@ p_dep_name IN  departments.department_name%TYPE,
 p_parent_id IN  departments.parent_id%TYPE,
 p_flag IN  VARCHAR2)
 IS
+vn_cnt NUMBER := 0;
+vn_cnt1 NUMBER := 0;
 BEGIN
 IF UPPER(p_flag) ='upsert' then
     MERGE INTO ch_09_departments a
-    USING(SELECT p_dep_id AS department_id from dual)bb
+    USING(SELECT p_dep_id AS department_id from dual)b
     ON  (a.department_id = b.dep_id)
     WHEN MATCHED THEN
     UPDATE SET a.departtment_name = p_dep_name,
                     a.parent_id = p_parnet_id
     WHEN NOT MATCHED THEN
     INSERT (a.department_id, a.departtment_name,a.parent_id)
-    VALUES( b.dep_id, p_dep_name,p_parnet_id);
-ELSIF UPPER(p_flag) = 'delete;' then
+    VALUES( p.dep_id, p_dep_name,p_parnet_id);
 
-end;
+ELSIF LOWER(p_flag) = 'delete;' then
+--해당부서가 있는지 체크
+SELECT  COUNT(*)
+INTO    vn_cnt
+FROM     ch_09_departments
+WHERE department_id =p_dep_id;
+--해당부서가 없으면 종료
+IF vn_cnt = 0 THEN
+        DBMS_OUTPUT.OUT_LINE('해당 부서가 없다.');
+        RETURN;
+END IF;
+--사원이 존재 하는지 체크
+SELECT  COUNT(*)
+INTO    vn_cnt1
+FROM    employees
+WHERE department_id =p_dep_id;
+-- 해당부서에 속한 사원이 있으면 종료
+IF vn_cnt1 > 0 THEN
+        DBMS_OUTPUT.OUT_LINE('해당부서에 속한 사원이 존재 하여 삭제 불가');
+        RETURN;
+END IF;
+DELETE  ch_09_departments
+WHERE department_id = p_dep_id;
+END IF;
+END;
 /
 EXEC my_dept_manage_proc(2800, 'IT', '기획부',90)
+
